@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: API de Saludos Serverless
+  description: API con autenticación JWT para probar serverless (calentamiento y enfriamiento)
+  version: 1.0.0
+servers:
+- url: https://example.com/api
+  description: Servidor en producción
+paths:
+  /auth/login:
+    post:
+      summary: Obtener un token JWT
+      description: Endpoint para generar un token JWT con usuario y contraseña
+      operationId: authLoginPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/auth_login_body"
+        required: true
+      responses:
+        "200":
+          description: Token generado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200"
+        "401":
+          description: Credenciales incorrectas
+      x-swagger-router-controller: Default
+  /hello/user1:
+    get:
+      summary: Saludo exclusivo para Usuario 1
+      operationId: helloUser1GET
+      responses:
+        "200":
+          description: Respuesta exitosa para Usuario 1
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_1"
+        "403":
+          description: Acceso denegado
+      security:
+      - BearerAuth: []
+      x-swagger-router-controller: Default
+  /hello/user2:
+    get:
+      summary: Saludo exclusivo para Usuario 2
+      operationId: helloUser2GET
+      responses:
+        "200":
+          description: Respuesta exitosa para Usuario 2
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_2"
+        "403":
+          description: Acceso denegado
+      security:
+      - BearerAuth: []
+      x-swagger-router-controller: Default
+  /hello/common:
+    get:
+      summary: Saludo disponible para ambos usuarios
+      operationId: helloCommonGET
+      responses:
+        "200":
+          description: Respuesta exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+        "403":
+          description: Acceso denegado
+      security:
+      - BearerAuth: []
+      x-swagger-router-controller: Default
+components:
+  schemas:
+    inline_response_200_1:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hola Usuario 1
+      example:
+        message: Hola Usuario 1
+    auth_login_body:
+      type: object
+      properties:
+        username:
+          type: string
+          example: usuario1
+        password:
+          type: string
+          example: clave123
+    inline_response_200:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      example:
+        access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    inline_response_200_2:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hola Usuario 2
+      example:
+        message: Hola Usuario 2
+    inline_response_200_3:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hola a ambos usuarios
+      example:
+        message: Hola a ambos usuarios
+  securitySchemes:
+    BearerAuth:
+      type: http
+      description: Se requiere un token JWT en el header Authorization para acceder
+        a los endpoints
+      scheme: bearer
+      bearerFormat: JWT
