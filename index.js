@@ -2,11 +2,19 @@
 
 var path = require('path');
 var http = require('http');
+var express = require('express');
+var bodyParser = require('body-parser');
 
 var oas3Tools = require('oas3-tools');
-var serverPort = 8080;
+var Default = require('./controllers/default.js'); // Importar controladores
 
-// swaggerRouter configuration
+var serverPort = 8080;
+var app = express();
+
+// Middleware para parsear JSON
+app.use(bodyParser.json());
+
+// Configuración de Swagger Router
 var options = {
     routing: {
         controllers: path.join(__dirname, './controllers')
@@ -14,11 +22,19 @@ var options = {
 };
 
 var expressAppConfig = oas3Tools.expressAppConfig(path.join(__dirname, 'api/openapi.yaml'), options);
-var app = expressAppConfig.getApp();
+var swaggerApp = expressAppConfig.getApp();
 
-// Initialize the Swagger middleware
+// Definir rutas manualmente (si deseas sobrescribir las de OpenAPI)
+app.post('/auth/login', Default.authLoginPOST);
+app.get('/hello/common', Default.helloCommonGET);
+app.get('/hello/user1', Default.helloUser1GET);
+app.get('/hello/user2', Default.helloUser2GET);
+
+// Usar las rutas de Swagger generadas automáticamente
+app.use(swaggerApp);
+
+// Iniciar servidor
 http.createServer(app).listen(serverPort, function () {
-    console.log('Your server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
-    console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+    console.log(`Server running on http://localhost:${serverPort}`);
+    console.log(`Swagger UI available at http://localhost:${serverPort}/docs`);
 });
-
